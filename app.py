@@ -44,9 +44,7 @@ def split_sound(soundfilename):
                     raw = ""
                     with open(chunkfilename, "rb") as chunkfile:
                         raw = base64.b64encode(chunkfile.read())
-                        #print(raw)
 
-                    #raw = str(base64.b64encode(rawfile))
                     chunkfile.close()
                     returnclips.append({'name' : r.recognize_google(audio), 'raw' : str(raw) })
                 
