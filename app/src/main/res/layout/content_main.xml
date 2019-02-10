@@ -17,12 +17,16 @@
         <RelativeLayout android:layout_width="match_parent"
                         android:layout_height="60dp"
                         android:background="@color/lightblue"
+                        android:focusableInTouchMode="true"
                         android:orientation="horizontal">
 
             <EditText
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/white"
+                    android:focusableInTouchMode="true"
+                    android:imeOptions="actionDone"
+                    android:maxLines="1"
                     android:layout_toStartOf="@+id/launch_recording"
                     android:id="@+id/board_search"/>
 

@@ -12,7 +12,9 @@ import android.R.attr.right
 import android.R.attr.top
 import android.R.attr.left
 import android.support.v4.content.ContextCompat.getDrawable
+import android.support.v7.app.AlertDialog
 import android.view.WindowManager
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 
 
@@ -44,9 +46,18 @@ class BoardAdapter(val context: Context, val sounds: List<String>, val boardMedi
             boardMediaInterface.playMedia(file)
         }
         button.setOnLongClickListener {
-            val file = File(sounds[position])
-            file.delete()
-            boardMediaInterface.addAdapter()
+            val builder = AlertDialog.Builder(context, R.style.MyDialogTheme)
+            builder.setTitle("File Removal")
+            builder.setMessage("Are you sure you want to delete the \""+sounds[position].replace(baseurl, "").substringBefore('.')+"\" button?")
+            builder.setPositiveButton("Yes") {dialog, which ->
+                val file = File(sounds[position])
+                file.delete()
+                boardMediaInterface.addAdapter()
+            }
+            builder.setNeutralButton("Cancel",null)
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
+
             true
         }
         return button

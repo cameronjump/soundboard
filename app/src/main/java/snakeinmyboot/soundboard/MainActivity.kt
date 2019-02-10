@@ -22,6 +22,8 @@ import kotlinx.android.synthetic.main.content_main.*
 import java.io.IOException
 import android.R.attr.fragment
 import android.app.Dialog
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.media.MediaPlayer
@@ -29,13 +31,18 @@ import android.support.v7.app.AlertDialog
 import android.text.Editable
 import android.text.TextUtils.replace
 import android.text.TextWatcher
+import android.util.EventLog
 import android.util.Log
 import android.view.*
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.nav_header_main.*
+import org.greenrobot.eventbus.EventBus
+import org.greenrobot.eventbus.Subscribe
+import org.greenrobot.eventbus.ThreadMode
 import java.io.File
 
 
@@ -78,6 +85,22 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         directoryActions()
         addAdapter()
 
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    fun onEvent(event: Any) {
+        addAdapter()
+    }
+
+
+    public override fun onStart() {
+        super.onStart()
+        EventBus.getDefault().register(this)
+    }
+
+    override fun onStop() {
+        super.onStop()
+        EventBus.getDefault().unregister(this)
     }
 
     fun directoryActions() {
@@ -160,6 +183,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         builder.setTitle("create voiceboard")
         builder.setMessage("voiceboard name")
         val editText = EditText(this)
+        editText.setTextColor(resources.getColor(R.color.white))
         builder.setView(editText)
         builder.setPositiveButton("Create") {dialog, which ->
             val text = editText.text.toString().toLowerCase()
@@ -213,13 +237,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             dialog.show()
         }
         else {
-            val rdir= File(Environment.getExternalStorageDirectory().toString() + "/soundboard/"+current+"/")
-            if (rdir.exists()) {
-                deleteRecursive(rdir)
+            val builder = AlertDialog.Builder(this, R.style.MyDialogTheme)
+            builder.setTitle("Board Removal")
+            builder.setMessage("Are you sure you want to remove the delete the \""+current+"\" board?")
+            builder.setPositiveButton("Yes") {dialog, which ->
+                val rdir= File(Environment.getExternalStorageDirectory().toString() + "/soundboard/"+current+"/")
+                if (rdir.exists()) {
+                    deleteRecursive(rdir)
+                }
+                current = "default"
+                addAdapter()
+                directoryActions()
             }
-            current = "default"
-            addAdapter()
-            directoryActions()
+            builder.setNeutralButton("Cancel",null)
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
         }
         return true
     }
@@ -259,4 +291,5 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         fileOrDirectory.delete()
     }
+
 }

@@ -17,6 +17,7 @@ import android.view.View
 import com.google.gson.GsonBuilder
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.internal.schedulers.IoScheduler
+import org.greenrobot.eventbus.EventBus
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -53,8 +54,7 @@ class RecordingActivity: AppCompatActivity() {
         recording_auto.setOnClickListener{
             recording_layout_manual.visibility = View.VISIBLE
             recording_layout_welcome.visibility = View.INVISIBLE
-            recording_text.visibility = View.GONE
-            recording_layout_welcome.removeView(recording_text)
+            manual_text_container.visibility= View.INVISIBLE
             modeManual = false
         }
         button_start_recording.setOnClickListener {
@@ -62,6 +62,7 @@ class RecordingActivity: AppCompatActivity() {
                 Toast.makeText(this, "Please add a filename.", Toast.LENGTH_SHORT).show()
             }
             else if (!running) {
+                manual_text_container.visibility= View.INVISIBLE
                 button_start_recording.text = "Stop"
                 startRecording()
             }
@@ -165,26 +166,41 @@ class RecordingActivity: AppCompatActivity() {
 
         val soundAPI = retrofit.create(WebInterface.SoundAPI::class.java)
 
-        //Log.d(TAG, "Attempting to send.")
+        Log.d(TAG, "Attempting to send.")
         var response = soundAPI.postAudio(WebInterface.Data("file", encoded))
 
-        response.observeOn(AndroidSchedulers.mainThread()).subscribeOn(IoScheduler()).subscribe {
-            val list = it
-            Log.d(TAG,list.toString())
+        response.observeOn(AndroidSchedulers.mainThread())
+            .doOnError( {
+                Log.d("RetrofitError", it.toString())
+            })
+            .subscribeOn(IoScheduler())
+            .doOnError( {
+                Log.d("RetrofitError", it.toString())
+            })
+            .subscribe {
+                try {
+                    val list = it
+                    Log.d(TAG,list.toString())
 
-            Toast.makeText(this, "Web Response Received.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Web Response Received.", Toast.LENGTH_SHORT).show()
 
-            for(data: WebInterface.Data in list) {
-                val readfile = baseurl+ data.name + ".wav"
-                Log.d(TAG, readfile)
-                var raw = data.raw.substring(2).trimEnd()
-                val decoded = Base64.decode(raw, Base64.DEFAULT)
-                Log.d(TAG,raw)
-                Log.d(TAG,decoded.toString())
-                var file = File(readfile).writeBytes(decoded)
+                    for(data: WebInterface.Data in list) {
+                        val readfile = baseurl+ data.name + ".wav"
+                        Log.d(TAG, readfile)
+                        var raw = data.raw.substring(2).trimEnd()
+                        val decoded = Base64.decode(raw, Base64.DEFAULT)
+                        Log.d(TAG,raw)
+                        Log.d(TAG,decoded.toString())
+                        var file = File(readfile).writeBytes(decoded)
+                        EventBus.getDefault().post("Hello")
 
+                    }
+                }
+                catch (e: Exception) {
+                    Log.d("RetrofitError",e.toString())
+                }
             }
-        }
+
         file.delete()
     }
 }

@@ -13,7 +13,5 @@ class WebInterface {
         fun postAudio(@Body data: Data) : Observable<List<Data>>
     }
 
-    data class Response(@SerializedName("name") val name: String)
-
     data class Data(@SerializedName("name") val name:String, @SerializedName("raw") val raw:String)
 }
