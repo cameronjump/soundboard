@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                                             android:layout_width="match_parent"
+                                             android:layout_height="match_parent"
+                                             xmlns:app="http://schemas.android.com/apk/res-auto">
+
+	<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:gravity="center"
+			android:orientation="vertical"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintLeft_toLeftOf="parent"
+			app:layout_constraintRight_toRightOf="parent"
+			android:id="@+id/recording_layout_welcome">
+		
+		<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:text="SELECT VOICEBITE CREATOR MODE"
+				  android:layout_margin="5dp"
+			android:id="@+id/recording_text"/>
+		
+		<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:orientation="horizontal">
+			<Button
+					android:id="@+id/recording_manual"
+					android:layout_width="wrap_content"
+					android:layout_margin="5dp"
+					android:layout_height="wrap_content"
+					android:background="@drawable/rounded_rectangle"
+					android:text="Manual"/>
+
+			<Button
+					android:id="@+id/recording_auto"
+					android:layout_width="wrap_content"
+					android:layout_margin="5dp"
+					android:layout_height="wrap_content"
+					android:background="@drawable/rounded_rectangle"
+					android:text="Auto"/>
+		</LinearLayout>
+	</LinearLayout>
+
+	<LinearLayout
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:gravity="center"
+			android:orientation="vertical"
+			android:visibility="invisible"
+			app:layout_constraintBottom_toBottomOf="parent"
+			app:layout_constraintTop_toTopOf="parent"
+			app:layout_constraintLeft_toLeftOf="parent"
+			app:layout_constraintRight_toRightOf="parent"
+			android:id="@+id/recording_layout_manual">
+
+		<LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+			android:id="@+id/manual_text_container" android:orientation="vertical">
+
+			<TextView android:layout_width="200dp"
+					  android:layout_height="wrap_content"
+					  android:id="@+id/recording_tip"
+					  android:text="ENTER VOICEBITE NAME"
+					  android:layout_gravity="center"
+					  android:gravity="center"/>
+
+			<EditText
+					android:id="@+id/recording_name"
+					android:layout_width="300dp"
+					android:layout_height="50dp"
+					android:gravity="center"
+					android:imeOptions="actionDone"
+					android:focusableInTouchMode="true"
+					android:background="@drawable/rounded_rectangle"
+					android:textColor="@color/white"/>
+
+		</LinearLayout>
+
+		<Button
+				android:id="@+id/button_start_recording"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_margin="5dp"
+				android:textColor="@color/white"
+				android:background="@drawable/rounded_button"
+				android:text="Start"/>
+
+		<Button
+				android:id="@+id/button_pause_recording"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_margin="5dp"
+				android:background="@drawable/rounded_rectangle"
+				android:textColor="@color/white"
+				android:text="Pause"/>
+	</LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
