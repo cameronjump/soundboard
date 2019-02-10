@@ -10,7 +10,7 @@ class WebInterface {
     interface SoundAPI {
 
         @POST("/soundboard")
-        fun postAudio(@Body data: Data) : Observable<Response>
+        fun postAudio(@Body data: Data) : Observable<List<Data>>
     }
 
     data class Response(@SerializedName("name") val name: String)

@@ -38,17 +38,25 @@ class BoardAdapter(val context: Context, val sounds: List<String>, val boardMedi
         button.text = text
         button.setTextColor(getColor(context,R.color.white))
         button.background = getDrawable(context, R.drawable.grid_button)
-        button.setOnClickListener({
+        button.setOnClickListener{
             val file = File(sounds[position])
             Log.d(TAG, file.toString())
             boardMediaInterface.playMedia(file)
-        })
+        }
+        button.setOnLongClickListener {
+            val file = File(sounds[position])
+            file.delete()
+            boardMediaInterface.addAdapter()
+            true
+        }
         return button
     }
 
     interface BoardMediaInterface{
 
         fun playMedia(file : File)
+
+        fun addAdapter()
     }
 
 }

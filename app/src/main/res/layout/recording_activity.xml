@@ -17,7 +17,7 @@
 			android:id="@+id/recording_layout_welcome">
 		
 		<TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-			android:text="SoundBite Creator Mode"
+			android:text="SELECT VOICEBITE CREATOR MODE"
 				  android:layout_margin="5dp"
 			android:id="@+id/recording_text"/>
 		
@@ -56,7 +56,7 @@
 
 		<TextView android:layout_width="200dp"
 				  android:id="@+id/recording_tip"
-				  android:text="ENTER SOUNDBITE NAME"
+				  android:text="ENTER VOICEBITE NAME"
 				  android:layout_gravity="center"
 				  android:gravity="center"
 				  android:layout_height="wrap_content"/>

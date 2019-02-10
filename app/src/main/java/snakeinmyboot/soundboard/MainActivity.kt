@@ -22,6 +22,7 @@ import kotlinx.android.synthetic.main.content_main.*
 import java.io.IOException
 import android.R.attr.fragment
 import android.app.Dialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.media.MediaPlayer
 import android.support.v7.app.AlertDialog
@@ -91,6 +92,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 defdir.mkdir()
             }
             if (rootdir.exists()) {
+                nav_view.menu.clear()
+                nav_view.menu.add("NEW BOARD")
                 rootdir.walk().forEach {
                     if(it.isDirectory) {
                         if(it.toString() != Environment.getExternalStorageDirectory().toString()+"/soundboard") {
@@ -105,7 +108,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     }
 
-    fun addAdapter() {
+    override fun addAdapter() {
         val sounds = mutableListOf<String>()
         val file = File(Environment.getExternalStorageDirectory().toString() + "/soundboard/"+current+"/")
         if (file.exists()) {
@@ -153,18 +156,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun createBoardDialog() {
-        val builder = AlertDialog.Builder(this@MainActivity)
-
-        builder.setTitle("Create New Soundboard")
-        builder.setMessage("Soundboard Name")
+        val builder = AlertDialog.Builder(this@MainActivity, R.style.MyDialogTheme)
+        builder.setTitle("create voiceboard")
+        builder.setMessage("voiceboard name")
         val editText = EditText(this)
         builder.setView(editText)
-        builder.setPositiveButton("Create"){dialog, which ->
-            Log.d("DialogDebug", editText.text.toString())
+        builder.setPositiveButton("Create") {dialog, which ->
+            val text = editText.text.toString().toLowerCase()
+            Log.d("DialogDebug",text)
+            val newdir = File(Environment.getExternalStorageDirectory().toString() + "/soundboard/"+text)
+            if (!newdir.exists()) {
+                newdir.mkdir()
+            }
+            directoryActions()
         }
-        builder.setNeutralButton("Cancel") {dialog, which ->
-            Log.d("DialogDebug", editText.text.toString())
-        }
+        builder.setNeutralButton("Cancel",null)
         val dialog: AlertDialog = builder.create()
 
         // Display the alert dialog on app interface
@@ -194,27 +200,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        when (item.itemId) {
-            R.id.action_settings -> return true
-            else -> return super.onOptionsItemSelected(item)
+
+        if(item.itemId == R.id.action_settings) {
+            val builder = AlertDialog.Builder(this@MainActivity, R.style.MyDialogTheme)
+
+            builder.setTitle("About")
+            builder.setMessage(getString(R.string.about))
+            builder.setPositiveButton("GO POKES",null)
+            val dialog: AlertDialog = builder.create()
+
+            // Display the alert dialog on app interface
+            dialog.show()
         }
+        else {
+            val rdir= File(Environment.getExternalStorageDirectory().toString() + "/soundboard/"+current+"/")
+            if (rdir.exists()) {
+                deleteRecursive(rdir)
+            }
+            current = "default"
+            addAdapter()
+            directoryActions()
+        }
+        return true
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Handle navigation view item clicks here.
-        if(item.itemId == R.id.new_board) {
+        if(item.toString() == "NEW BOARD") {
             createBoardDialog()
         }
         else {
             Log.d("NavDebug",item.toString())
+            current = item.toString()
+            addAdapter()
         }
 
         drawer_layout.closeDrawer(GravityCompat.START)
         return true
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -226,5 +250,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         super.onRestart()
 
         addAdapter()
+    }
+
+    fun deleteRecursive(fileOrDirectory: File) {
+        if (fileOrDirectory.isDirectory)
+            for (child in fileOrDirectory.listFiles()!!)
+                deleteRecursive(child)
+
+        fileOrDirectory.delete()
     }
 }

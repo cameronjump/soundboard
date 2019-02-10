@@ -1,34 +1,26 @@
 package snakeinmyboot.soundboard
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
-import android.content.pm.PackageManager
+import android.content.Context
 import android.media.MediaRecorder
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
-import android.os.PersistableBundle
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
-import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.recording_activity.*
 import java.io.IOException
-import android.system.Os.mkdir
 import android.util.Base64
 import android.view.View
 import com.google.gson.GsonBuilder
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.internal.schedulers.IoScheduler
-import io.reactivex.schedulers.Schedulers
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.io.File
-import java.nio.file.Files.exists
 
 
 
@@ -146,10 +138,15 @@ class RecordingActivity: AppCompatActivity() {
             mediaRecorder?.stop()
             mediaRecorder?.release()
             running = false
-            Toast.makeText(this, "Recording completed!", Toast.LENGTH_SHORT).show()
-            finish()
             if(!modeManual) {
+                Toast.makeText(this, "Web Request Submitted!", Toast.LENGTH_SHORT).show()
                 sendAudio(output as String)
+                finish()
+
+            }
+            else {
+                Toast.makeText(this, "Recording completed!", Toast.LENGTH_SHORT).show()
+                finish()
             }
         }else{
             Toast.makeText(this, "You are not recording right now!", Toast.LENGTH_SHORT).show()
@@ -160,7 +157,7 @@ class RecordingActivity: AppCompatActivity() {
         var file = File(fileName)
         var fileContents = File(fileName).readBytes()
         var encoded = Base64.encodeToString(fileContents, Base64.DEFAULT)
-        Log.d(TAG, encoded)
+        //Log.d(TAG, encoded)
 
         val retrofit = Retrofit.Builder().addConverterFactory(GsonConverterFactory.create(GsonBuilder().create()))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
@@ -171,16 +168,23 @@ class RecordingActivity: AppCompatActivity() {
         //Log.d(TAG, "Attempting to send.")
         var response = soundAPI.postAudio(WebInterface.Data("file", encoded))
 
-        response.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(
-                { response -> Log.d(TAG, response.toString())
-                },
-                { error ->
-                    Toast.makeText(this, error.message,Toast.LENGTH_SHORT).show()
-                }
-            )
+        response.observeOn(AndroidSchedulers.mainThread()).subscribeOn(IoScheduler()).subscribe {
+            val list = it
+            Log.d(TAG,list.toString())
 
+            Toast.makeText(this, "Web Response Received.", Toast.LENGTH_SHORT).show()
+
+            for(data: WebInterface.Data in list) {
+                val readfile = baseurl+ data.name + ".wav"
+                Log.d(TAG, readfile)
+                var raw = data.raw.substring(2).trimEnd()
+                val decoded = Base64.decode(raw, Base64.DEFAULT)
+                Log.d(TAG,raw)
+                Log.d(TAG,decoded.toString())
+                var file = File(readfile).writeBytes(decoded)
+
+            }
+        }
         file.delete()
     }
 }

@@ -6,6 +6,7 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+    <string name="about">Hacklahoma 2019\n\ncreated by\nCameron Jump\nMaddie Hawkins\nGerardo Toth\nSteven Mead</string>
     <string name="url">http://10.194.83.72:5000</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
