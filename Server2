@@ -1,0 +1,84 @@
+from flask import Flask, jsonify, request, abort, render_template, flash, url_for, redirect, render_template
+import MyDatabase as db
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, BooleanField, SubmitField
+from wtforms.fields.html5 import DateField, TimeField
+from wtforms.validators import DataRequired
+from werkzeug import secure_filename
+app = Flask(__name__)
+app.config.from_object(__name__)
+app.config['SECRET_KEY'] = 'pizza-is$the#key'
+# -------------------------------------------------------------- API --------------------------------------------------------------
+def verify_user(request):
+    useremail = request.args.get('useremail')
+    userpwd = request.args.get('userpwd')
+    if db.user_is_verified(useremail, userpwd):
+            return True
+    abort(401)
+@app.route('/science/api/v1.0/verify', methods=['GET'])
+def get_verified():
+    if verify_user(request):
+        return jsonify({"success": True})
+@app.route('/science/api/v1.0/verify', methods=['POST'])
+def post_new_user():
+    useremail = request.args.get('useremail')
+    userpwd = request.args.get('userpwd')
+    if db.add_user(useremail, userpwd):
+        return jsonify({"success": True})
+    else:
+        return jsonify({"success": False})
+@app.route('/science/api/v1.0/events', methods=['GET'])
+def get_event_list():
+    return jsonify({"events": db.retrieve_event_list()})
+@app.route('/science/api/v1.0/events/grab', methods=['GET'])
+def get_event():
+    eventuid = request.args.get('eventuid')
+    return jsonify(db.retrieve_event(eventuid))
+@app.route('/science/api/v1.0/events/search', methods=['GET'])
+def get_project_search():
+    searchtext = request.args.get('searchtext')
+    return jsonify({"projects":db.search_projects(searchtext)})
+# ------------------------------------------------------------ Website ------------------------------------------------------------
+@app.route("/", methods=['GET', 'POST'])
+def mainpage():
+    return render_template('mainpage.html')
+class EventForm(FlaskForm):
+    useremail = StringField('Email', validators=[DataRequired()])
+    userpassword = PasswordField('Password', validators=[DataRequired()])
+    eventname = StringField('Event Name', validators=[DataRequired()])
+    eventlocation = StringField('Event Location', validators=[DataRequired()])
+    eventstartdate = DateField('Event Start Date', validators=[DataRequired()])
+    eventstarttime = TimeField('Event Start Time', validators=[DataRequired()])
+    eventicon = StringField('Event Icon', validators=[DataRequired()])
+    projectsubmissioncode = StringField('Project Submission Code', validators=[DataRequired()])
+    submit = SubmitField('Register')
+ 
+@app.route("/registerevent", methods=['GET', 'POST'])
+def eventpage():
+    form = EventForm()
+    if form.validate_on_submit():
+        if db.user_is_verified(form.useremail.data, form.userpassword.data):
+            db.add_event(form.useremail.data, form.eventname.data, form.eventlocation.data, form.projectsubmissioncode.data, str(form.eventstartdate.data), str(form.eventstarttime.data))
+            flash("Event succesfully registered.")
+        else:
+            flash('User is not verified.')
+        filename = secure_filename(str(form.eventicon.data))
+        form.eventicon.data.save('uploads/' + filename)
+        return redirect(url_for('upload'))
+    return render_template('eventwebform.html', title='Event Registration', form=form)  
+class UserForm(FlaskForm):
+    name = StringField('Name (First and Last)', validators=[DataRequired()])
+    useremail = StringField('Email', validators=[DataRequired()])
+    userpassword = PasswordField('Password', validators=[DataRequired()])
+    submit = SubmitField('Register')
+@app.route("/registeruser", methods=['GET', 'POST'])
+def userpage():
+    form = UserForm()
+    if form.validate_on_submit():
+        if db.add_user(form.useremail.data, form.userpassword.data, form.name.data):
+            flash("User succesfully registered.")
+        else:
+            flash("Failed to register user. (User email already exists)")
+    return render_template('userwebform.html', title='User Registration', form=form)
+if __name__ == '__main__':
+app.run(host='0.0.0.0', ssl_context='adhoc')
