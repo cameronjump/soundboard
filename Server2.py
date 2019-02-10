@@ -21,7 +21,7 @@ def get_soundclip():
         new_file.write(base64.b64decode(file_body))
         new_file.close()
         os.system('ffmpeg -i {}.mp4 -acodec pcm_s16le -ar 16000 {}.wav'.format(file_name, file_name))
-
+        os.remove(file_name + '.mp4')
         return jsonify(split_sound(file_name + '.wav'))
 
 # ------------------------------------------------------------ SPLIT ---------------------------------------------------------------
@@ -41,7 +41,14 @@ def split_sound(soundfilename):
             
                 try: 
                     print("The audio file contains: " + r.recognize_google(audio)) 
-                    returnclips.append({'name' : r.recognize_google(audio), 'file' : chunkfilename })
+                    raw = ""
+                    with open(chunkfilename, "rb") as chunkfile:
+                        raw = base64.b64encode(chunkfile.read())
+                        #print(raw)
+
+                    #raw = str(base64.b64encode(rawfile))
+                    chunkfile.close()
+                    returnclips.append({'name' : r.recognize_google(audio), 'raw' : str(raw) })
                 
                 except sr.UnknownValueError: 
                     print("Google Speech Recognition could not understand audio") 
@@ -49,6 +56,9 @@ def split_sound(soundfilename):
                 except sr.RequestError as e: 
                     print("Could not request results from Google Speech Recognition service; {0}".format(e)) 
 
+                os.remove(chunkfilename)
+        
+        os.remove(soundfilename)
         return returnclips
 
 if __name__ == '__main__':
