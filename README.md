@@ -1,4 +1,4 @@
-# soundboard
+# voiceboard
 
 ![screenshot_20190210_132220](https://user-images.githubusercontent.com/23038185/52538350-3c527980-2d37-11e9-87fc-b0eff53c92fa.png)
 
