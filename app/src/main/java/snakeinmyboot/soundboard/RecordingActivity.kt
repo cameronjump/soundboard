@@ -23,6 +23,7 @@ import android.view.View
 import com.google.gson.GsonBuilder
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.internal.schedulers.IoScheduler
+import io.reactivex.schedulers.Schedulers
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
@@ -41,43 +42,36 @@ class RecordingActivity: AppCompatActivity() {
     private var running: Boolean = false
     private var recordingStopped: Boolean = false
     private var modeManual = true
+    private var baseurl = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.recording_activity)
+        val base = intent.getStringExtra("base")
+        baseurl = Environment.getExternalStorageDirectory().toString() + "/soundboard/"+base+"/"
 
         mediaRecorder = MediaRecorder()
 
-        recording_manual.setOnClickListener({
-            recording_layout_manual.visibility = View.VISIBLE
-            recording_layout_welcome.visibility = View.INVISIBLE
+        recording_manual.setOnClickListener{
             modeManual = true
-        })
-
-        recording_auto.setOnClickListener({
             recording_layout_manual.visibility = View.VISIBLE
             recording_layout_welcome.visibility = View.INVISIBLE
-            recording_text.visibility = View.INVISIBLE
+        }
+
+        recording_auto.setOnClickListener{
+            recording_layout_manual.visibility = View.VISIBLE
+            recording_layout_welcome.visibility = View.INVISIBLE
+            recording_text.visibility = View.GONE
+            recording_layout_welcome.removeView(recording_text)
             modeManual = false
-        })
+        }
         button_start_recording.setOnClickListener {
-            if (modeManual && recording_text.text == "") {
+            if (modeManual && recording_text.text.toString() == "") {
                 Toast.makeText(this, "Please add a filename.", Toast.LENGTH_SHORT).show()
             }
             else if (!running) {
-                if (ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED && ContextCompat.checkSelfPermission(this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    val permissions = arrayOf(android.Manifest.permission.RECORD_AUDIO, android.Manifest.permission.WRITE_EXTERNAL_STORAGE, android.Manifest.permission.READ_EXTERNAL_STORAGE)
-                    ActivityCompat.requestPermissions(this, permissions,0)
-                } else {
-                    val direct = File(Environment.getExternalStorageDirectory().toString() + "/soundboard")
-                    if (!direct.exists()) {
-                        direct.mkdir()
-                    }
-                    button_start_recording.text = "Stop"
-                    startRecording()
-                }
+                button_start_recording.text = "Stop"
+                startRecording()
             }
             else {
                 stopRecording()
@@ -94,19 +88,18 @@ class RecordingActivity: AppCompatActivity() {
         if(modeManual) {
             val fileName = recording_name.text.toString()
             recording_name.text.clear()
-            file = File(Environment.getExternalStorageDirectory().toString() + "/soundboard/"+fileName+".mp3")
+            file = File(baseurl+fileName+".mp3")
             if(file.exists()) {
                 file.delete()
             }
-            output = Environment.getExternalStorageDirectory().absolutePath + "/soundboard/"+fileName+".mp3"
+            output = file.toString()
         } else {
-            val fileName = recording_name.text.toString()
             recording_name.text.clear()
-            file = File(Environment.getExternalStorageDirectory().toString() + "/soundboard/temp.mp3")
+            file = File(baseurl + "/soundboard/temp.mp3")
             if(file.exists()) {
                 file.delete()
             }
-            output = Environment.getExternalStorageDirectory().absolutePath + "/soundboard/temp.mp3"
+            output = baseurl + "temp.mp3"
         }
         mediaRecorder?.setAudioSource(MediaRecorder.AudioSource.MIC)
         mediaRecorder?.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
@@ -177,9 +170,17 @@ class RecordingActivity: AppCompatActivity() {
 
         //Log.d(TAG, "Attempting to send.")
         var response = soundAPI.postAudio(WebInterface.Data("file", encoded))
-        response.observeOn(AndroidSchedulers.mainThread()).subscribeOn(IoScheduler()).subscribe {
 
-        }
+        response.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { response -> Log.d(TAG, response.toString())
+                },
+                { error ->
+                    Toast.makeText(this, error.message,Toast.LENGTH_SHORT).show()
+                }
+            )
+
         file.delete()
     }
 }

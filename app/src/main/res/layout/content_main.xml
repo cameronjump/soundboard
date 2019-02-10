@@ -14,11 +14,33 @@
                   android:orientation="vertical"
                   android:layout_height="match_parent">
 
-        <Button
-                android:id="@+id/launch_recording"
-                android:text="Create Sound Clip"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+        <RelativeLayout android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:background="@color/lightblue"
+                        android:orientation="horizontal">
+
+            <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/white"
+                    android:layout_toStartOf="@+id/launch_recording"
+                    android:id="@+id/board_search"/>
+
+            <ImageButton
+                    android:id="@+id/launch_recording"
+                    android:text="Create Sound Clip"
+                    android:layout_marginHorizontal="5dp"
+                    android:background="@color/lightblue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_alignParentRight="true"
+                    android:scaleType="centerInside"
+                    android:adjustViewBounds="true"
+                    android:src="@drawable/create"/>
+
+
+        </RelativeLayout>
+
 
 
         <GridView
@@ -26,7 +48,12 @@
                 android:numColumns="3"
                 android:scrollbars="vertical"
                 android:layout_width="match_parent"
+                android:horizontalSpacing="16dp"
+                android:verticalSpacing="16dp"
+                android:padding="16dp"
+                android:clipToPadding="false"
                 android:layout_height="wrap_content"
+                android:background="@color/white"
                 android:layout_weight="10">
         </GridView>
 
