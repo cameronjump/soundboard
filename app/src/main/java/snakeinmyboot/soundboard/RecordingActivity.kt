@@ -177,9 +177,9 @@ class RecordingActivity: AppCompatActivity() {
             .doOnError( {
                 Log.d("RetrofitError", it.toString())
             })
-            .subscribe {
+            .subscribe ( {result ->
                 try {
-                    val list = it
+                    val list = result
                     Log.d(TAG,list.toString())
 
                     Toast.makeText(this, "Web Response Received.", Toast.LENGTH_SHORT).show()
@@ -199,7 +199,10 @@ class RecordingActivity: AppCompatActivity() {
                 catch (e: Exception) {
                     Log.d("RetrofitError",e.toString())
                 }
-            }
+            },{
+                error -> Log.d(TAG, error.toString())
+                Toast.makeText(this, "Web Response Failed.", Toast.LENGTH_SHORT).show()
+            })
 
         file.delete()
     }
